@@ -120,14 +120,12 @@
 
 ---
 
-## 🎯 **Conclusion**
-This cheat sheet provides a **quick reference** for essential Docker commands, covering everything from **container management** to **networking, security, and debugging**. Bookmark this page for **fast access** during your Docker workflows! 🚀
 
 
 
 
 
-📌 Dockerfile Commands & Their Explanation
+# 📌 Dockerfile Commands & Their Explanation
 
 |Command|	Explanation|	Example|
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | 
