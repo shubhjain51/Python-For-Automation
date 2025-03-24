@@ -1,4 +1,4 @@
-📌 2. Dockerfile Commands & Their Explanation
+📌 Dockerfile Commands & Their Explanation
 
 Command	Explanation	Example
 FROM	Sets the base image for the container.	FROM python:3.9
