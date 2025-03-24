@@ -146,3 +146,90 @@
 |ONBUILD|	Defines a command to run only when used as a base image.	|ONBUILD COPY . /app|
 |SHELL	|Changes the default shell inside the container.	|SHELL ["/bin/bash", "-c"]|
 |STOPSIGNAL|	Defines the system signal to stop the container.	|STOPSIGNAL SIGTERM|
+
+
+
+
+# Kubernetes Scenario Based Questions
+
+ ## 1. Pod & Container Issues
+Pod is stuck in CrashLoopBackOff state. How do you debug and fix it?
+Pod is stuck in ContainerCreating state. How do you investigate?
+Pod is failing with OOMKilled. What does this mean, and how do you resolve it?
+A container inside a pod is taking too long to start. How do you debug startup issues?
+You have configured liveness and readiness probes, but your pod is continuously restarting. What could be the issue?
+How would you debug a container that exits immediately after starting?
+Your pod is failing due to missing environment variables. How do you debug it?
+You deployed an application, but logs are not visible using kubectl logs. What could be the reason?
+
+## 2. Service & Networking Issues
+A Service is created, but it’s not routing traffic to the pods. How do you debug it?
+A pod is unable to reach another pod on a different node. How do you troubleshoot networking issues?
+Your Kubernetes NodePort service is not accessible externally. What do you check?
+You have a LoadBalancer service, but it’s not getting an external IP. How do you debug it?
+Ingress is not working as expected. How do you debug it?
+A pod cannot resolve an external domain (e.g., google.com). What could be the problem?
+Network policies are blocking traffic between services. How do you identify and fix this?
+
+## 3. Node & Cluster Issues
+One of the nodes is in NotReady state. How do you investigate?
+Pods are not being scheduled on a particular node. What could be the reasons?
+You have a node that is running low on CPU and memory. How do you optimize resource allocation?
+How do you drain a node safely before maintenance?
+How do you recover a Kubernetes node that is down?
+Kubelet is not running on a node. How do you debug and fix this?
+You see DiskPressure or MemoryPressure taints on a node. What should you do?
+
+## 4. Persistent Storage Issues
+A Persistent Volume Claim (PVC) is stuck in Pending state. How do you resolve it?
+A pod is unable to mount a Persistent Volume. What could be the issue?
+You deleted a pod, but its volume data is missing when a new pod is created. Why?
+A StatefulSet pod is failing to mount the expected storage. How do you debug this?
+
+## 5. Deployment & Scaling Issues
+A Deployment is stuck in Pending state. How do you debug it?
+You scaled your Deployment, but new pods are not being created. What do you check?
+A rolling update is failing and causing downtime. How do you troubleshoot?
+You want to roll back a failed deployment. How do you do it?
+A pod takes a long time to terminate. What could be causing this delay?
+How do you ensure zero downtime while deploying a new version of an application?
+Your Kubernetes cluster is experiencing high latency. How do you optimize it?
+Your Horizontal Pod Autoscaler (HPA) is not scaling up pods. What could be the issue?
+Your pods are scaling up but not down when load decreases. What do you check?
+
+## 6. Security & Access Control Issues
+A user is unable to create a resource in a namespace. How do you check their permissions?
+How do you prevent a pod from running as root?
+A pod is unable to access a Kubernetes secret. What could be the issue?
+A pod is running with more privileges than expected. How do you fix this?
+How do you restrict access to certain namespaces for a specific user?
+How do you ensure secure communication between services in Kubernetes?
+A ServiceAccount is missing necessary permissions. How do you debug RBAC issues?
+
+## 7. Logging, Monitoring, & Debugging
+How do you debug a pod that does not generate logs?
+How do you check real-time logs of a failing pod?
+Your cluster is experiencing CPU and memory spikes. How do you monitor resource usage?
+How do you set up centralized logging for a Kubernetes cluster?
+How do you enable and use Kubernetes audit logs?
+A pod is experiencing intermittent failures. How do you collect metrics to debug it?
+How do you use Prometheus and Grafana to monitor Kubernetes metrics?
+
+## 8. ConfigMaps & Secrets Issues
+A pod is failing because it cannot read a ConfigMap. How do you fix it?
+How do you update a ConfigMap without restarting the pods?
+A pod is unable to read a Secret. How do you debug and resolve it?
+You need to update a Secret without restarting your application. How do you achieve this?
+
+## 9. StatefulSet, DaemonSet & Job Issues
+A StatefulSet pod is not coming up after a restart. How do you debug it?
+A DaemonSet is not running on all nodes. What could be the reason?
+How do you restart a specific pod in a StatefulSet?
+A Kubernetes Job is not completing. How do you debug it?
+A CronJob is not triggering as expected. How do you troubleshoot it?
+
+## 10. Kubernetes API & Controller Issues
+The Kubernetes API server is down. How do you recover it?
+A custom controller is not reconciling resources as expected. How do you debug it?
+How do you debug an issue where kubectl apply takes too long?
+A Kubernetes Operator is not managing CRDs correctly. How do you troubleshoot it?
