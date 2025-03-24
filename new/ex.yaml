@@ -1,0 +1,249 @@
+# 1- Deploy an ec2 or Azure instance using terraform
+# 2- Make a plybook file using Ansible
+# 3- Write a Python Automation Script.
+# 4- Write a deployment file, pvc,pv, ingress.
+# 5- Write a Docker file.
+# 6- Write some sample Prometheus Query.
+# 7- Write a ci/cd pipeline from github action and Jenkins.
+
+
+1- Terraform
+
+terraform {
+  required_providers {
+    azurerm = {
+      source= "hashicorp/azure"
+      version = "3.87.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  region= "ap-south-1"
+  alias= "mumbai"
+}
+
+resource "azure_resource_group" "example" {
+  name= "subhanshu-rg"
+  location= "ap-south-1"
+}
+
+resource "azurerm_virtual_network" "main" {
+  name                = "${var.prefix}-network"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+}
+
+resource "azurerm_subnet" "internal" {
+  name                 = "internal"
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+resource "azurerm_network_interface" "main" {
+  name                = "${var.prefix}-nic"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  ip_configuration {
+    name                          = "testconfiguration1"
+    subnet_id                     = azurerm_subnet.internal.id
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_virtual_machine" "main" {
+  name= "shubhanshu"
+  location= azurerm_resource_group.example.location
+  resource_group = azurerm_resource_group.example.name
+  network_interface_id= [azurerm_network_interface.main.id]
+  vm_size= "Standard_DS1_V2"
+
+    storage_image_reference {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+  storage_os_disk {
+    name              = "myosdisk1"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+  os_profile {
+    computer_name  = "hostname"
+    admin_username = "testadmin"
+    admin_password = "Password1234!"
+  }
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  tags = {
+    environment = "staging"
+  }
+
+  # Dyanmic Block in terraform
+
+  dynamic "setting" {
+    for_each= var.setting != null ? var.setting : {}
+    content{
+      name= setting.value.name   # or  setting.value["name"]
+      namespace= setting.value.namespace
+      value= setting.value.value
+    }
+  }
+}
+}
+
+
+2 -  ANSIBLE
+
+## Ansible Directory Layout
+
+inventories/
+   production/
+      hosts               # inventory file for production servers
+      group_vars/
+         group1.yml       # here we assign variables to particular groups
+         group2.yml
+      host_vars/
+         hostname1.yml    # here we assign variables to particular systems
+         hostname2.yml
+
+   staging/
+      hosts               # inventory file for staging environment
+      group_vars/
+         group1.yml       # here we assign variables to particular groups
+         group2.yml
+      host_vars/
+         stagehost1.yml   # here we assign variables to particular systems
+         stagehost2.yml
+
+library/
+module_utils/
+filter_plugins/
+
+roles/
+    common/               # this hierarchy represents a "role"
+        tasks/            #
+            main.yml      #  <-- tasks file can include smaller files if warranted
+        handlers/         #
+            main.yml      #  <-- handlers file
+        templates/        #  <-- files for use with the template resource
+            ntp.conf.j2   #  <------- templates end in .j2
+        files/            #
+            bar.txt       #  <-- files for use with the copy resource
+            foo.sh        #  <-- script files for use with the script resource
+        vars/             #
+            main.yml      #  <-- variables associated with this role
+        defaults/         #
+            main.yml      #  <-- default lower priority variables for this role
+        meta/             #
+            main.yml      #  <-- role dependencies and optional Galaxy info
+        library/          # roles can also include custom modules
+        module_utils/     # roles can also include custom module_utils
+        lookup_plugins/   # or other types of plugins, like lookup in this case
+
+    webtier/              # same kind of structure as "common" was above, done for the webtier role
+    monitoring/           # ""
+    fooapp/               # ""
+
+ansible_playbook.yaml
+
+
+ansible-playbook -i production ansible_playbook.yaml ## Command to run Playbook is
+
+# Various file for the ansible
+
+                              # Host.yaml or host file #
+
+#basic structure
+10.3.4.2
+[webservers]
+10.1.1.3.4
+[dbservers]
+10.2.3.4
+
+# In YAML Format
+ungrouped:
+  hosts:
+    10.3.4.2
+webservers:
+  hosts:
+    10.1.1.3.4
+    foo.example.com
+dbservers:
+  hosts:
+    10.2.3.4
+    
+
+                              # Group vars #
+
+---
+# file: group_vars/webservers
+apacheMaxRequestsPerChild: 3000
+apacheMaxClients: 900
+
+
+                            ## file: roles/common/tasks/main.yml#
+
+- name: Make sure Apache is installed
+  apt:
+    name: apache2
+    state: latest
+    update_cache: yes
+- name: Make sure Apache service is started and enabled at root
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+- name: Make sure index.html file is present in /var/www/html
+  copy:
+    src: /home/ansible/.ansible/files/index.html
+    dest: /var/www/html/index.html
+  notify:                  ## Handled by handlers
+  - Restart Apache   
+
+                           ## Handlers ##
+
+- name: Restart Apache
+  service:
+    name: apache2
+    state: restarted
+
+                          # Playbook.yaml file ##
+
+- hosts: webservers # or all
+  roles:
+    - common
+    - apache2  # other role name
+
+ansible-playbook ansible_playbook.yaml --limit webservers  # This will deploy the roles only to webservers ips.
+
+
+
+3- DOCKERFILE
+
+FROM python:3.9-slim
+LABEL maintainer="shubhanshujain51@gmail.com"
+LABEL version="1.0"
+LABEL description="Flask application with Nginx"
+WORKDIR /src/app
+COPY . /src/app
+COPY requirements.txt .
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+RUN  pip install -r requirements.txt
+EXPOSE 8080
+CMD ['python', 'app.py'] 
+
+docker tag flask-app shubh/flask-app
+docker push shubh/flask-app
+docker buid -t flask-app .
+build run -d -p 8080:80  flask-app  ## 8080 azure ip 80 container ip
+
+
+
