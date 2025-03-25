@@ -233,3 +233,156 @@
 2. A custom controller is not reconciling resources as expected. How do you debug it?      
 3. How do you debug an issue where kubectl apply takes too long?     
 4. A Kubernetes Operator is not managing CRDs correctly. How do you troubleshoot it?     
+
+
+
+
+# 📌 Linux Commands Cheat Sheet
+
+## 🔹 1. Basic Linux Commands
+| Command | Description |
+|---------|------------|
+| `pwd` | Print the current working directory. |
+| `ls` | List files and directories in the current directory. |
+| `cd <dir>` | Change the directory to `<dir>`. |
+| `mkdir <dir>` | Create a new directory. |
+| `rmdir <dir>` | Remove an empty directory. |
+| `rm <file>` | Remove a file. |
+| `rm -r <dir>` | Remove a directory and its contents recursively. |
+| `cp <source> <destination>` | Copy a file or directory. |
+| `mv <source> <destination>` | Move or rename a file or directory. |
+| `touch <file>` | Create a new empty file. |
+| `cat <file>` | Display the contents of a file. |
+| `more <file>` | View file contents page by page. |
+| `less <file>` | View file contents (allows scrolling). |
+| `echo "text"` | Print text to the terminal. |
+| `clear` | Clear the terminal screen. |
+
+## 🔹 2. File Permissions & Ownership
+| Command | Description |
+|---------|------------|
+| `ls -l` | List files with detailed permissions. |
+| `chmod 755 <file>` | Change file permissions. |
+| `chown user:group <file>` | Change file ownership. |
+| `chgrp <group> <file>` | Change the group ownership of a file. |
+| `umask` | Show default file permissions. |
+
+## 🔹 3. Process Management
+| Command | Description |
+|---------|------------|
+| `ps aux` | Show running processes. |
+| `top` | Show system resource usage. |
+| `htop` | Interactive process viewer (if installed). |
+| `kill <PID>` | Kill a process by its Process ID. |
+| `kill -9 <PID>` | Forcefully terminate a process. |
+| `pkill <process-name>` | Kill a process by its name. |
+| `jobs` | Show background jobs. |
+| `bg <jobID>` | Resume a background job. |
+| `fg <jobID>` | Bring a background job to the foreground. |
+| `nohup <command> &` | Run a command in the background, ignoring hangups. |
+
+## 🔹 4. Disk Usage & Storage Management
+| Command | Description |
+|---------|------------|
+| `df -h` | Show disk usage in a human-readable format. |
+| `du -sh <dir>` | Show the size of a directory. |
+| `lsblk` | List information about block devices. |
+| `mount /dev/sdX /mnt` | Mount a partition. |
+| `umount /mnt` | Unmount a partition. |
+| `fdisk -l` | List disk partitions. |
+| `mkfs.ext4 /dev/sdX` | Format a partition with ext4 filesystem. |
+
+## 🔹 5. User Management
+| Command | Description |
+|---------|------------|
+| `whoami` | Show the current logged-in user. |
+| `who` | Show logged-in users. |
+| `id` | Show user and group IDs. |
+| `adduser <username>` | Add a new user. |
+| `userdel -r <username>` | Delete a user and their home directory. |
+| `passwd <username>` | Change the user password. |
+| `usermod -aG <group> <user>` | Add a user to a group. |
+| `groups <user>` | Show groups a user belongs to. |
+
+## 🔹 6. Networking Commands
+| Command | Description |
+|---------|------------|
+| `ip a` | Show IP addresses. |
+| `ifconfig` | Show network interfaces (older command). |
+| `ping <hostname>` | Send ICMP packets to test network connectivity. |
+| `netstat -tulnp` | Show listening ports and services. |
+| `ss -tulnp` | Show active network connections (modern replacement for netstat). |
+| `nslookup <domain>` | Query DNS records. |
+| `dig <domain>` | Get detailed DNS information. |
+| `traceroute <domain>` | Show the route packets take to a host. |
+| `wget <URL>` | Download a file from a URL. |
+| `curl -O <URL>` | Download a file from a URL. |
+
+## 🔹 7. Package Management
+### 🟢 Debian-based (Ubuntu, Debian)
+| Command | Description |
+|---------|------------|
+| `apt update` | Update package lists. |
+| `apt upgrade` | Upgrade installed packages. |
+| `apt install <package>` | Install a package. |
+| `apt remove <package>` | Remove a package. |
+
+### 🔵 RHEL-based (CentOS, Fedora, RHEL)
+| Command | Description |
+|---------|------------|
+| `yum update` | Update packages (RHEL 7). |
+| `dnf update` | Update packages (RHEL 8+). |
+| `yum install <package>` | Install a package. |
+| `yum remove <package>` | Remove a package. |
+
+### 🟠 Arch Linux
+| Command | Description |
+|---------|------------|
+| `pacman -Syu` | Update system. |
+| `pacman -S <package>` | Install a package. |
+
+## 🔹 8. Logs & System Monitoring
+| Command | Description |
+|---------|------------|
+| `journalctl -xe` | View system logs. |
+| `dmesg` | Show kernel logs. |
+| `uptime` | Show system uptime. |
+| `free -m` | Show memory usage. |
+| `vmstat` | Show system performance. |
+| `iostat` | Show CPU and disk statistics. |
+| `mpstat` | Show CPU usage. |
+
+## 🔹 9. Compression & Archiving
+| Command | Description |
+|---------|------------|
+| `tar -cvf archive.tar <dir>` | Create a `.tar` archive. |
+| `tar -xvf archive.tar` | Extract a `.tar` archive. |
+| `tar -czvf archive.tar.gz <dir>` | Create a compressed `.tar.gz` archive. |
+| `tar -xzvf archive.tar.gz` | Extract a `.tar.gz` archive. |
+| `zip -r archive.zip <dir>` | Create a `.zip` archive. |
+| `unzip archive.zip` | Extract a `.zip` archive. |
+
+## 🔹 10. Text Processing
+| Command | Description |
+|---------|------------|
+| `grep "pattern" <file>` | Search for a pattern in a file. |
+| `awk '{print $1}' <file>` | Process text in columns. |
+| `sed 's/old/new/g' <file>` | Replace text in a file. |
+| `cut -d':' -f1 /etc/passwd` | Extract specific fields from a file. |
+| `sort <file>` | Sort lines in a file. |
+| `uniq <file>` | Remove duplicate lines. |
+| `wc -l <file>` | Count lines in a file. |
+
+## 🔹 11. SSH & Remote Access
+| Command | Description |
+|---------|------------|
+| `ssh user@host` | Connect to a remote system via SSH. |
+| `scp file user@host:/path` | Securely copy files between systems. |
+| `rsync -av source/ destination/` | Sync files efficiently. |
+
+## 🔹 12. System Shutdown & Reboot
+| Command | Description |
+|---------|------------|
+| `shutdown -h now` | Shutdown immediately. |
+| `shutdown -r now` | Reboot the system. |
+| `reboot` | Restart the system. |

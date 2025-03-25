@@ -246,4 +246,293 @@ docker buid -t flask-app .
 build run -d -p 8080:80  flask-app  ## 8080 azure ip 80 container ip
 
 
+3- KUBERNETES
+
+                                ## Basic Pod Creation file ##
+
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerport: 80
+
+
+                              ## Pod Creation file with all the required parameters ##
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  namespace: default
+  labels:
+    app: my-app
+  annotations:
+    description: "This is a sample pod with all parameters"
+spec:
+  restartPolicy: Always  # Options: Always, OnFailure, Never
+  priorityClassName: high-priority  # Assigns scheduling priority
+  serviceAccountName: default  # Assigns a service account to the pod
+  dnsPolicy: ClusterFirst  # DNS policy options: ClusterFirst, Default, None
+  
+  securityContext:
+    runAsUser: 1000  # Run containers as user 1000
+    runAsGroup: 1000  # Assign group ID
+    fsGroup: 2000  # Filesystem group
+    seccompProfile:
+      type: RuntimeDefault  # Security profile
+
+  # Init Containers (Executed before main containers)
+  initContainers:
+  - name: init-config
+    image: busybox
+    command: ["sh", "-c", "echo 'Initializing...'; sleep 5"]
+    volumeMounts:
+    - name: config-volume
+      mountPath: /config
+
+  # Main and Sidecar Containers
+  containers:
+  - name: main-app
+    image: nginx:latest
+    imagePullPolicy: Always  # Options: Always, IfNotPresent, Never
+    ports:
+    - name: http
+      containerPort: 80
+      protocol: TCP
+    env:
+    - name: ENVIRONMENT
+      value: "production"
+    - name: CONFIG_PATH
+      value: "/config/app-config.yaml"
+    envFrom:
+    - configMapRef:
+        name: app-config
+    - secretRef:
+        name: app-secrets
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 80
+      initialDelaySeconds: 10
+      periodSeconds: 5
+    readinessProbe:
+      tcpSocket:
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    startupProbe:
+      exec:
+        command: ["cat", "/etc/nginx/nginx.conf"]
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    volumeMounts:
+    - name: shared-data
+      mountPath: /usr/share/nginx/html
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN"]
+  
+  - name: log-collector  # Sidecar container
+    image: fluentd
+    volumeMounts:
+    - name: logs
+      mountPath: /var/log/app
+    securityContext:
+      runAsUser: 1001  # Run as a specific user
+
+  # Volumes
+  volumes:
+  - name: config-volume
+    configMap:
+      name: app-config
+  - name: logs
+    emptyDir: {}
+  - name: shared-data
+    persistentVolumeClaim:
+      claimName: shared-pvc
+
+  # Node Scheduling Parameters
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  tolerations:
+  - key: "node-role.kubernetes.io/master"
+    effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/os
+            operator: In
+            values:
+            - linux
+
+  # Image Pull Secret for Private Registries
+  imagePullSecrets:
+  - name: my-docker-secret
+
+
+
+
+                                  ## Deployment File ##
+
+apiVersion: apps/v1
+Kind: Deployment
+metadat:
+  name: nginx-deployment
+  namespace: default
+  labels:
+    app: deployment
+spec:
+  replicas: 3
+  selector:  
+    matchLabels:
+      app: deployment 
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx
+        ports:
+        - containerPort: 80 
+
+
+
+apiVersion: apps/v1
+Kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: default
+  labels:
+    app: nginx-deployment
+spec: 
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-deployment
+  template:
+    metadata:
+      app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+          containerPort: 80
+
+
+
+
+                                    ## Deployment file with all required parameters ##
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment  # Name of the Deployment
+  namespace: default       # Namespace where the deployment runs
+  labels:
+    app: my-app            # Labels help identify resources
+
+spec:
+  replicas: 3              # Number of pod replicas
+  strategy:
+    type: RollingUpdate    # Update strategy (RollingUpdate or Recreate)
+    rollingUpdate:
+      maxSurge: 1          # How many new pods can be created during update
+      maxUnavailable: 1    # How many pods can be unavailable during update
+  selector:
+    matchLabels:
+      app: my-app          # Ensures pods belong to this deployment
+
+  template:
+    metadata:
+      labels:
+        app: my-app        # Labels assigned to pods
+
+    spec:
+      containers:
+        - name: my-app-container  # Container name
+          image: nginx:latest     # Image from Docker Hub
+          imagePullPolicy: Always # Always pull latest image on deployment
+
+          ports:
+            - containerPort: 80   # Port where the app runs inside the container
+
+          resources:              # Define resource limits
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+          env:                    # Define environment variables
+            - name: ENV_MODE
+              value: "production"
+
+          readinessProbe:          # Readiness probe to check if the app is ready
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:           # Liveness probe to check if the app is alive
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+
+          volumeMounts:            # Mount a volume inside the container
+            - name: config-volume
+              mountPath: /etc/config
+
+      volumes:                     # Define volumes for the pod
+        - name: config-volume
+          configMap:
+            name: my-config
+
+      nodeSelector:                # Schedule pods on specific nodes
+        disktype: ssd
+
+      tolerations:                 # Allow scheduling on tainted nodes
+        - key: "special-node"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+      affinity:                    # Define pod affinity/anti-affinity
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/e2e-az-name
+                    operator: In
+                    values:
+                      - us-west-1a
+
+
+
+
+
+
 
